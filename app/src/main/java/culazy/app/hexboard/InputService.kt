@@ -2,25 +2,37 @@ package culazy.app.hexboard
 
 import android.inputmethodservice.InputMethodService
 import android.inputmethodservice.Keyboard
+import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 
 class InputService : InputMethodService(), android.inputmethodservice.KeyboardView.OnKeyboardActionListener {
 
+    // TODO: remove old original implementation, eventually
+    private val originalPrototype = false
     private var priorCode: Int? = null
     private var lastWasSecondary = false
     private var keyboard: Keyboard? = null
     private var view: android.inputmethodservice.KeyboardView? = null
     private var lastFullCode: Int? = null
+    private var keyboardView: KeyboardView? = null
 
     override fun onCreateInputView(): View {
-        priorCode = null
-        view = layoutInflater.inflate(R.layout.keyboard_layout, null) as android.inputmethodservice.KeyboardView
-        keyboard = Keyboard(this, R.xml.keyboard)
-        view!!.keyboard = keyboard
-        view!!.setOnKeyboardActionListener(this)
-        updateKeyLabels()
-        return view!!
+        if (originalPrototype) {
+            priorCode = null
+            view = layoutInflater.inflate(R.layout.keyboard_layout_original, null) as android.inputmethodservice.KeyboardView
+            keyboard = Keyboard(this, R.xml.keyboard)
+            view!!.keyboard = keyboard
+            view!!.setOnKeyboardActionListener(this)
+            updateKeyLabels()
+            return view!!
+        } else {
+            val keyboardView = layoutInflater.inflate(R.layout.keyboard_layout, null) as culazy.app.hexboard.KeyboardView
+            keyboardView.setMaxWidth(this.maxWidth)
+            keyboardView.setInputService(this)
+            this.keyboardView = keyboardView
+            return keyboardView
+        }
     }
 
     override fun onPress(primaryCode: Int) {
@@ -85,9 +97,9 @@ class InputService : InputMethodService(), android.inputmethodservice.KeyboardVi
 
     private fun applyFullCode(fullCode: Int) {
         when (fullCode) {
-            8 -> handleDelete()
-            10 -> handleEnter()
-            127 -> handleDelete(true)
+            8 -> Input.sendDownUp(currentInputConnection, KeyEvent.KEYCODE_DEL)
+            10 -> Input.sendDownUp(currentInputConnection, KeyEvent.KEYCODE_ENTER)
+            127 -> Input.sendDownUp(currentInputConnection, KeyEvent.KEYCODE_FORWARD_DEL)
             else -> currentInputConnection.commitText(fullCode.toChar().toString(), 1)
         }
     }
@@ -102,6 +114,13 @@ class InputService : InputMethodService(), android.inputmethodservice.KeyboardVi
     }
 
     override fun swipeUp() {
+    }
+
+    override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
+        super.onStartInputView(editorInfo, restarting)
+        val view = keyboardView ?: return
+        view.reset()
+
     }
 
     private fun updateKeyLabels() {
@@ -164,29 +183,6 @@ class InputService : InputMethodService(), android.inputmethodservice.KeyboardVi
             in 32..126 -> fullCode.toChar().toString()
             127 -> "⌦"
             else -> "-✖-" // ✖❌
-        }
-    }
-
-    private fun handleDelete(forwards: Boolean = false) {
-        val selection = currentInputConnection.getSelectedText(0)
-        if (selection != null) {
-            currentInputConnection.commitText("", 0)
-            return
-        }
-        if (forwards) {
-            currentInputConnection.deleteSurroundingText(0, 1)
-        } else {
-            currentInputConnection.deleteSurroundingText(1, 0)
-        }
-    }
-
-    private fun handleEnter() {
-        val options = currentInputEditorInfo.imeOptions
-        val actionCode = options and EditorInfo.IME_MASK_ACTION
-        when (actionCode) {
-            EditorInfo.IME_ACTION_UNSPECIFIED, EditorInfo.IME_ACTION_NONE ->
-                currentInputConnection.commitText("\n", 1)
-            else -> currentInputConnection.performEditorAction(actionCode)
         }
     }
 }
