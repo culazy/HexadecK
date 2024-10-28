@@ -9,7 +9,6 @@ import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.os.Vibrator
 import android.util.AttributeSet
-import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat.getSystemService
@@ -31,8 +30,7 @@ class KeyboardView : View {
     private var actionCount = 0
 
     private val debugPaint = Paint()
-    private val touchDownPaint = Paint()
-    private val touchUpPaint = Paint()
+    private val touchLinePaint = Paint()
     private val touchPoints = HashMap<Int, TouchPointData>()
     private val vibrator: Vibrator?
     private val touchIcon: Drawable
@@ -51,9 +49,8 @@ class KeyboardView : View {
         vibrator = getSystemService(context, Vibrator::class.java)
         debugPaint.color = Color.WHITE
         debugPaint.textSize = 60f
-        touchDownPaint.color = Color.argb(96, 0, 192, 0)
-        touchUpPaint.color = Color.argb(128, 0, 0, 255)
-        touchUpPaint.strokeWidth = 12f
+        touchLinePaint.color = Color.argb(96, 255, 192, 0)
+        touchLinePaint.strokeWidth = 10f
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -71,7 +68,7 @@ class KeyboardView : View {
             if (entry.value.lastGestureIndex <= gestureCount - touchPointLifetime) {
                 continue
             }
-            canvas.drawLine(entry.value.downX, entry.value.downY, entry.value.x, entry.value.y, touchUpPaint)
+            canvas.drawLine(entry.value.downX, entry.value.downY, entry.value.x, entry.value.y, touchLinePaint)
             touchIconBounds.set(entry.value.downX - 40, entry.value.downY - 40, entry.value.downX + 40, entry.value.downY + 40)
             touchIcon.bounds = touchIconBounds
             touchIcon.setColorFilter(Color.argb(80, 255, 128, 0), PorterDuff.Mode.MULTIPLY)

@@ -27,7 +27,7 @@ class HexagonKey(
     override var secondaryLabel: String? = null
     object Theme {
         val passiveColor = Color.argb(192, 255, 255, 0)
-        val activeColor = Color.WHITE
+        val activeColor = Color.argb(224, 255, 255, 224)
         val downColor = Color.argb(128, 128, 128, 128)
         val centerPassiveColor = Color.argb(112, 224, 96, 0)
         val centerActiveColor = Color.argb(224, 224, 96, 0)
@@ -42,9 +42,9 @@ class HexagonKey(
 
     init {
         bounds = RectF(posX, posY, posX + width, posY + height)
-        labelPaint.color = Color.YELLOW
+        labelPaint.color = Color.argb(255, 255, 192, 0)
         labelPaint.textAlign = Paint.Align.CENTER
-        secondaryLabelPaint.color = Color.WHITE
+        secondaryLabelPaint.color = Color.argb(255, 255, 255, 224)
         secondaryLabelPaint.textAlign = Paint.Align.CENTER
         dotPaint.color = Color.YELLOW
         inactiveDotPaint.color = Color.argb(80, 128, 192, 255)
@@ -132,7 +132,7 @@ class HexagonKey(
             canvas.drawText(
                 secondaryLabel!!,
                 centerX,
-                centerY - iconBounds.height() * 0.1f,
+                centerY + iconBounds.height() * 0.25f,
                 secondaryLabelPaint
             )
         }
@@ -141,7 +141,7 @@ class HexagonKey(
             canvas.drawText(
                 label!!,
                 centerX,
-                centerY + iconBounds.height() * 0.3f,
+                centerY - iconBounds.height() * 0.05f,
                 labelPaint
             )
         }
